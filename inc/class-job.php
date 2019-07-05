@@ -81,7 +81,12 @@ class Job {
 	}
 
 	public function reschedule() {
-		$this->nextrun = date( MYSQL_DATE_FORMAT, time() + $this->interval );
+		// The aim is to slightly change the nextrun value, but leaving it on average on the same time.
+		// We have thousands of blogs running on the same infrastructure. If a plugin let every blog schedule a task on
+		// a specified time, i try to execute them in an interval instead of all at the same time
+		$interval = 5*60; #5 minutes
+		$randInt = random_int(-$interval, $interval);
+		$this->nextrun = date( MYSQL_DATE_FORMAT, strtotime( $this->nextrun ) + $this->interval + $randInt);
 		$this->status  = 'waiting';
 
 		$query = "UPDATE {$this->table_prefix}cavalcade_jobs";
